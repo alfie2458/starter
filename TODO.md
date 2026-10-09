@@ -19,3 +19,13 @@
 - [ ] **實際運作驗證與部署交付**：主要按鈕及表單均可操作；桌面/平板/手機版主要版面通過檢查。必須驗證完成任務後 XP 與建材依規則增加、重複提交不重複發獎、建材不足無法建造、達成條件後建築正確解鎖、建造後重新登入保留、電腦/手機/iPad 可見相同狀態、不同帳號無法互改、休息一週城市保留、收藏與成就符合條件，以及伺服器/同步失敗不錯誤顯示成功。交付時列出實際部署網址、資料庫設定說明、測試結果、未完成事項及已知問題。不得把靜態假資料、未連接按鈕或純前端獎勵動畫視為已完成。
 
 > 已驗證：`pnpm check`、`pnpm test`（6 個既有測試）、`pnpm build`、`pnpm test:stargrid-db`（新手解鎖、啟動不發獎、單一 active timer、跨日期任務、部分完成不發獎、獎勵冪等與遞減但無上限、任務完成、建築解鎖/建造重試、餘額保護、帳號隔離），以及 Preview 首頁/health/manifest/favicon HTTP 回應。待部署回執確認；另未在兩台實體裝置並行實測、未等候一週做實時觀察，故不宣稱已完成實機多裝置及一週休息實測。
+
+## Cloudflare 與 GitHub 追加交付
+
+- [x] **把程式碼放到指定 GitHub repo**：使用者指定的 `alfie2458/starter` 已確認為 Private 且空 repo；STARGRID `main` 已推送並確認 SHA `42788474b5efebd44d1f7077c3a40e1f141262d9`。Manus Webdev canonical `origin` 保持不變，GitHub 作第二個 private remote。
+- [ ] **把 STARGRID 部署到 Cloudflare**：在使用者 Cloudflare 帳戶新增獨立 Worker `stargrid`，不修改現有 Workers、DNS 或自有網域；以 Cloudflare Workers Node compatibility/Express adapter 提供既有 `/api/*`、Manus OAuth callback、health/public-config API，並以 Assets binding 發佈 Vite `dist/public` 與 SPA routes。保留 Manus OAuth、`webdev_app_session`、CSRF nonce 及 `SameSite=None; Secure`；保留目前 MySQL schema、使用者 openId/資料列及資料庫交易，以 Hyperdrive 連接現有 MySQL，不改用 D1、不匯出/重新對應 user data。`MANUS_PROJECT_ID`、`MANUS_OAUTH_PORTAL_URL`、`MANUS_OAUTH_API_URL`、`MANUS_JWT_SECRET` 等值只能進入 Cloudflare Worker secrets/vars，不可進入 Git、公開 assets、程式碼、URL 或輸出。部署須先驗證靜態首頁、`/api/health`、`/manus-routes.json`、favicon、tRPC server readiness 及實際 OAuth callback/login；無法登入時不得宣稱完整可用。公開網址須是實際成功的 Cloudflare Worker 網址。將既有 `DATABASE_URL` 存入 Cloudflare Hyperdrive 前先取得使用者明確授權；Cloudflare 部署結果與 GitHub 上最新版 commit SHA 均須驗證，不把本機 build/Preview 當正式發布。
+
+## 手動部署交接（2026-10-09）
+
+- [x] 提供可自行操作的 Cloudflare/Hyperdrive 部署指南：[`CLOUDFLARE_DEPLOY.md`](CLOUDFLARE_DEPLOY.md)。
+- [ ] **Cloudflare 正式部署由專案擁有者自行完成**：依使用者最新指示，本次不代建 Worker/Hyperdrive、不操作 Cloudflare API、不收取/存放 Cloudflare API token、不設定實際 Worker secrets、不發布或宣稱 Cloudflare 上線；擁有者自行完成資源建立、Manus OAuth callback 許可、正式 URL 及登入/雲端 DB 驗證。

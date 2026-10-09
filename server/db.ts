@@ -1,17 +1,37 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import { createPool } from "mysql2";
 import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+type HyperdriveBinding = {
+  host: string;
+  user: string;
+  password: string;
+  database: string;
+  port: number;
+};
+let _hyperdrive: HyperdriveBinding | null = null;
+
+export function setHyperdriveBinding(binding: HyperdriveBinding): void {
+  _hyperdrive = binding;
+}
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  if (!_db && _hyperdrive) {
+    try {
+      _db = drizzle(createPool({ ..._hyperdrive, disableEval: true, connectionLimit: 5 }));
+    } catch (error) {
+      console.warn("[Database] Failed to initialize Hyperdrive pool.", error instanceof Error ? error.name : "unknown");
+      _db = null;
+    }
+  } else if (!_db && process.env.DATABASE_URL) {
     try {
       _db = drizzle(process.env.DATABASE_URL);
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.warn("[Database] Failed to initialize local MySQL pool.", error instanceof Error ? error.name : "unknown");
       _db = null;
     }
   }
