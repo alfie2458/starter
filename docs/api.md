@@ -1,26 +1,9 @@
 # STARGRID API（Phase 2–7 初始入口）
 
-啟動：
+啟動前請設定 `STARGRID_API_TOKEN`。只有 `/health` 不需要 Bearer token；若只是本機開發，可明確設定 `STARGRID_ALLOW_INSECURE_LOCAL=true`，不可用於正式環境。
 
 ```bash
-node server/index.mjs
+STARGRID_API_TOKEN=change-me node server/index.mjs
 ```
 
-目前提供最小 HTTP 入口：
-
-| Method | Path | 用途 |
-|---|---|---|
-| GET | `/health` | 健康檢查 |
-| POST | `/tasks` | 建立 Task |
-| POST | `/tasks/:id/transition` | 執行合法 Task 狀態轉移 |
-| POST | `/knowledge/drafts` | 建立 Knowledge 草稿 |
-| POST | `/knowledge/:id/publish` | 發布 Knowledge Note |
-| POST | `/exams` | 建立 Exam Notification |
-| POST | `/study-plans` | 依考試與時段產生 Study Plan |
-| POST | `/automations/validate` | 驗證 trigger/action allowlist |
-| POST | `/agents/select` | 依能力選擇 Agent |
-| POST | `/gamification/award` | 寫入 XP/coin ledger |
-| GET | `/gamification/balance` | 查詢成員餘額 |
-| GET | `/events` | 查看本次程序的協調事件 |
-
-目前是 process-local memory store，重啟後資料會消失。正式儲存 adapter、認證 middleware、rate limit、schema validator 與 external provider 仍需後續接入；不得將此初始入口視為 production deployment。
+所有受保護回應都會提供 `x-request-id`。請求有大小限制、依來源 rate limit，資料目前仍以 process-local memory store 保存；`STARGRID_DATA_FILE` 預留給後續接入原子 JSON persistence。
