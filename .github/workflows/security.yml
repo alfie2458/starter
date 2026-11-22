@@ -1,0 +1,27 @@
+name: Security baseline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  repository-security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Secret-safe repository check
+        run: node scripts/check-repository.mjs
+      - name: Check for accidentally tracked environment files
+        run: |
+          if git ls-files | grep -E '(^|/)(\.env|\.env\.)' | grep -v '^\.env\.example$'; then
+            echo 'Tracked environment file detected'
+            exit 1
+          fi
+      - name: Diff hygiene
+        run: git diff --check

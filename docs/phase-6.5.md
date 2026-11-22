@@ -11,15 +11,22 @@ Phase 6.5 集中處理正式上線前的硬化工程，不新增產品功能，�
 - Request ID、audit event、readiness check
 - Event Bus bounded retry 與 History consumer
 - Runtime config validation
+- GitHub identity resolver 與 workspace-level authorization
+- Actor-aware rate limit、request timeout、structured JSON log 與 metrics endpoint
+- Event queue retry / dead-letter primitives
+- Backup checksum 與 retention policy
+- GitHub identity resolver 與 workspace-level authorization
+- Actor-aware rate limit、request timeout、structured JSON log 與 metrics endpoint
+- Event queue retry / dead-letter primitives
+- Backup checksum 與 retention policy
 - Graceful shutdown
 - JSON store backup / restore 腳本
 
 ## 尚待完成
 
-- GitHub identity middleware 與 workspace-level authorization
-- 正式 broker、死信佇列與跨程序鎖
-- 完整 redacted structured logging 與 metrics/tracing
+- 正式 broker 與跨程序鎖
+- production metrics/tracing backend 與 alert routing
 - secret scanning、依賴固定 SHA 與 fork PR policy 的管理員驗證
-- 備份 retention、restore drill 與 production Environment reviewer
+- 備份 retention 的實際排程、restore drill 與 production Environment reviewer
 
 完成 Phase 6.5 前，不把服務標記為 production-ready。

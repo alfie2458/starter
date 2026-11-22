@@ -11,6 +11,10 @@ import { evaluateAchievements } from '../engines/gamification/src/achievements.m
 import { buildLeaderboard } from '../engines/gamification/src/leaderboard.mjs';
 import { validatePointEvidence, correctAward } from '../engines/gamification/src/anti-abuse.mjs';
 import { readiness } from './hardening.mjs';
+import { requireWorkspaceAccess } from './workspace-auth.mjs';
+import { createMetrics, createLogger } from './observability.mjs';
+import { requireWorkspaceAccess } from './workspace-auth.mjs';
+import { createMetrics, createLogger } from './observability.mjs';
 import { createIntegrationHub } from './integration.mjs';
 import { createCoordinationEvent } from '../packages/shared/src/events.mjs';
 import { awardPoints, balance } from '../engines/gamification/src/ledger.mjs';
@@ -26,6 +30,8 @@ import { authorize } from './auth.mjs';
 import { createRateLimiter } from './rate-limit.mjs';
 
 export function createApp({ store = createMemoryStore(), config, persist = async () => {} } = {}) {
+  const metrics = createMetrics(); const logger = createLogger();
+  const metrics = createMetrics(); const logger = createLogger();
   for (const key of ['automationRuns', 'audit', 'calendar', 'notifications']) if (!Array.isArray(store[key])) store[key] = [];
   const calendarAdapter = new CalendarAdapter();
   const notificationAdapter = new NotificationAdapter();
@@ -36,6 +42,8 @@ export function createApp({ store = createMemoryStore(), config, persist = async
     const url = new URL(req.url, 'http://localhost');
     if (req.method === 'GET' && url.pathname === '/health') return json(res, 200, { status: 'ok', service: 'stargrid', version: '3.0.0-alpha.1', request_id: req.context.requestId });
     if (req.method === 'GET' && url.pathname === '/ready') { const result = readiness(store, config); return json(res, result.ready ? 200 : 503, result); }
+    if (req.method === 'GET' && url.pathname === '/metrics') return json(res, 200, metrics.snapshot());
+    if (req.method === 'GET' && url.pathname === '/metrics') return json(res, 200, metrics.snapshot());
     if (req.method === 'GET' && url.pathname === '/events') return json(res, 200, store.events);
     if (req.method === 'GET' && url.pathname === '/tasks') {
       const workspaceId = url.searchParams.get('workspace_id');
@@ -46,6 +54,12 @@ export function createApp({ store = createMemoryStore(), config, persist = async
       return task ? json(res, 200, task) : json(res, 404, { error: 'TASK_NOT_FOUND' });
     }
     const body = await tools.readBody(req);
+    const workspaceId = body.workspace_id ?? url.searchParams.get('workspace_id');
+    if (config?.requireWorkspaceAuth && !['/health', '/ready', '/metrics'].includes(url.pathname) && !workspaceId && req.context.identity?.kind !== 'service') throw Object.assign(new Error('WORKSPACE_REQUIRED'), { code: 'WORKSPACE_REQUIRED', statusCode: 400 });
+    if (config?.requireWorkspaceAuth && workspaceId) requireWorkspaceAccess({ store, identity: req.context.identity, workspaceId });
+    const workspaceId = body.workspace_id ?? url.searchParams.get('workspace_id');
+    if (config?.requireWorkspaceAuth && !['/health', '/ready', '/metrics'].includes(url.pathname) && !workspaceId && req.context.identity?.kind !== 'service') throw Object.assign(new Error('WORKSPACE_REQUIRED'), { code: 'WORKSPACE_REQUIRED', statusCode: 400 });
+    if (config?.requireWorkspaceAuth && workspaceId) requireWorkspaceAccess({ store, identity: req.context.identity, workspaceId });
     if (req.method === 'POST' && url.pathname === '/events/publish') { const event = createCoordinationEvent({ workspaceId: body.workspace_id, type: body.type, aggregateType: body.aggregate_type, aggregateId: body.aggregate_id, payload: body.payload ?? {}, actorId: req.context.actorId, correlationId: body.correlation_id }); const result = await integration.publish(event, req.context); await save(); return json(res, result.accepted ? 201 : 200, result); }
     if (req.method === 'POST' && url.pathname === '/tasks') {
       validateTaskInput(body);
@@ -94,5 +108,5 @@ export function createApp({ store = createMemoryStore(), config, persist = async
     return json(res,404,{error:'NOT_FOUND'});
   };
   const limiter = createRateLimiter({ limit: config?.rateLimit, windowMs: config?.rateWindowMs });
-  return { store, handler: router, server: createHttpServer(router, { authorize: (req) => authorize(req, config), rateLimit: limiter, maxBodyBytes: config?.maxBodyBytes }) };
+  return { store, handler: router, metrics, logger, server: createHttpServer(router, { authorize: (req) => authorize(req, config), rateLimit: limiter, maxBodyBytes: config?.maxBodyBytes, requestTimeoutMs: config?.requestTimeoutMs, metrics, logger }) };
 }

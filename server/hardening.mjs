@@ -1,5 +1,5 @@
 export function readiness(store, config) {
-  const checks = { store: Boolean(store), auth: Boolean(config?.apiToken || config?.allowInsecureLocal), collections: Array.isArray(store?.tasks) && Array.isArray(store?.events) };
+  const checks = { store: Boolean(store), auth: Boolean(config?.apiToken || config?.allowInsecureLocal || config?.identityMode === 'github'), collections: Array.isArray(store?.tasks) && Array.isArray(store?.events) };
   return { ready: Object.values(checks).every(Boolean), checks };
 }
 
