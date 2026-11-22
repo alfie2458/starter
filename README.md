@@ -22,7 +22,7 @@ STARGRID 的做法是把協作流程本身產品化：
 
 ## 目前能做什麼？
 
-目前專案已從空 Repository 重建出完整平台骨架，並有一個可呼叫的最小 API：
+目前專案已從空 Repository 重建出 Phase 1–6.5 的平台骨架，並有一個可呼叫的最小 API。現況是「可持續開發的核心基線」，不是 production-ready 服務：
 
 ### 已可使用的核心能力
 
@@ -36,18 +36,21 @@ STARGRID 的做法是把協作流程本身產品化：
 - Task API runtime validation
 - 可選 JSON 檔案持久化
 - Bearer Token、Request ID、body size limit 與 rate limit
+- GitHub identity mode、workspace authorization、readiness 與 graceful shutdown
+- Atomic JSON store、backup/restore、event retry/dead-letter primitive 與 structured metrics/logging 基線
+- GitHub Actions workflow 的 immutable commit SHA pinning
 
-### 仍在建置中的部分
+### 目前最重要的未完成事項
 
-目前仍不是正式生產部署。以下能力需要後續實作或管理員設定：
+完整清單與階段排序請看[待解決問題清單](docs/open-issues.md)。目前最關鍵的是：
 
-- 正式身份登入與 GitHub Organization / Team 整合
-- 正式資料庫或高併發儲存 adapter
-- 真實 AI provider 與模型額度調度
-- Calendar / Notification 的外部服務同步
-- 完整前端介面
-- Branch protection、Secret Scanning、Dependabot 與 Production Environment reviewer
-- 備份與復原演練
+- 將本機 JSON store 替換為正式資料庫、broker 與跨程序一致性控制
+- 接上真實 AI、Calendar、Notification 與背景 worker
+- 完成前端、人工審核與成員治理介面
+- 建立完整測試、restore drill、metrics/tracing backend 與告警
+- 補齊 GitHub 管理員層級的安全設定
+
+目前 GitHub Repository 是 Private，只有 owner `alfie2458`。現有方案無法啟用 Branch protection；Repository 層級仍允許所有 Actions，且未強制 SHA pinning。Workflow 內已自行固定使用的 Actions SHA，但這不等同於 GitHub 平台策略已鎖定。Security analysis API 也沒有回傳可用狀態，Secret Scanning、Push Protection、Dependabot、CodeQL 與 Production Environment reviewer 仍需從 GitHub UI / 管理員設定確認。
 
 這些限制會被明確記錄，不會把「已建立骨架」描述成「已正式上線」。
 
@@ -148,7 +151,7 @@ Task 會先經過 runtime validation，再進入 domain service；合法的狀�
 
 ## 專案路線圖
 
-完整狀態請見[全階段路線文件](docs/roadmap.md)。目前規劃為：
+完整狀態請見[全階段路線文件](docs/roadmap.md)，逐項待辦請見[待解決問題清單](docs/open-issues.md)。目前規劃為：
 
 1. **Phase 1：** GitHub 基礎架構、Monorepo、身份與權限
 2. **Phase 2：** Knowledge Engine、AI Knowledge Publisher、Learning、Exam Planner
@@ -156,7 +159,8 @@ Task 會先經過 runtime validation，再進入 domain service；合法的狀�
 4. **Phase 4：** Agent Orchestration、模型目錄、額度與審計
 5. **Phase 5：** Gamification、XP、金幣、成就與排行榜
 6. **Phase 6：** 跨引擎整合、事件協調與權限串接
-7. **Phase 7：** QA、安全測試、備份與正式發布
+7. **Phase 6.5：** P0/P1 平台硬化與正式環境收尾
+8. **Phase 7：** QA、安全測試、備份與正式發布
 
 ## 安全底線
 
@@ -168,6 +172,8 @@ Task 會先經過 runtime validation，再進入 domain service；合法的狀�
 
 - [API 操作文件](docs/api.md)
 - [全階段路線](docs/roadmap.md)
+- [待解決問題清單](docs/open-issues.md)
+- [Phase 6.5：平台硬化](docs/phase-6.5.md)
 - [Phase 1：基礎架構](docs/phase-1.md)
 - [Phase 2：Knowledge 與 Learning](docs/phase-2.md)
 - [ADR 0001：GitHub 優先 Monorepo](docs/adr/0001-github-first-monorepo.md)
