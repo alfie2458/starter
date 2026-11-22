@@ -2,14 +2,24 @@
 
 Phase 6.5 集中處理正式上線前的硬化工程，不新增產品功能，專注降低資料遺失、越權、重複副作用與不可觀測風險。
 
-## 硬化清單
+## 已落地的硬化
 
-- **認證與權限：** Bearer token、fail-closed 設定、後續 GitHub identity middleware、workspace scope。
-- **輸入與輸出：** JSON Schema/runtime validation、body size limit、安全錯誤訊息、敏感欄位遮罩。
-- **持久化：** 原子寫入、同檔寫入排隊、啟動載入、備份與 restore 演練。
-- **併發與冪等：** idempotency key、quota reservation、Automation run 去重、事件去重。
-- **可觀測性：** Request ID、audit event、redacted log、readiness check、失敗狀態。
-- **供應鏈：** workflow 最小權限、依賴固定版本、secret scanning、fork PR 不取得 secrets。
-- **復原與發布：** migration/rollback、production reviewer、backup retention 與 disaster recovery 演練。
+- Bearer token 與 fail-closed 設定
+- Runtime validation、body size limit、安全錯誤訊息
+- 原子 JSON 寫入與同檔寫入排隊
+- idempotency key、quota reservation、Automation run 去重
+- Request ID、audit event、readiness check
+- Event Bus bounded retry 與 History consumer
+- Runtime config validation
+- Graceful shutdown
+- JSON store backup / restore 腳本
+
+## 尚待完成
+
+- GitHub identity middleware 與 workspace-level authorization
+- 正式 broker、死信佇列與跨程序鎖
+- 完整 redacted structured logging 與 metrics/tracing
+- secret scanning、依賴固定 SHA 與 fork PR policy 的管理員驗證
+- 備份 retention、restore drill 與 production Environment reviewer
 
 完成 Phase 6.5 前，不把服務標記為 production-ready。

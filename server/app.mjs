@@ -11,6 +11,8 @@ import { evaluateAchievements } from '../engines/gamification/src/achievements.m
 import { buildLeaderboard } from '../engines/gamification/src/leaderboard.mjs';
 import { validatePointEvidence, correctAward } from '../engines/gamification/src/anti-abuse.mjs';
 import { readiness } from './hardening.mjs';
+import { createIntegrationHub } from './integration.mjs';
+import { createCoordinationEvent } from '../packages/shared/src/events.mjs';
 import { awardPoints, balance } from '../engines/gamification/src/ledger.mjs';
 import { validateCalendarEvent } from '../engines/calendar/src/validator.mjs';
 import { validateNotification } from '../engines/notification/src/validator.mjs';
@@ -29,6 +31,7 @@ export function createApp({ store = createMemoryStore(), config, persist = async
   const notificationAdapter = new NotificationAdapter();
   const automationExecutor = createAutomationExecutor({ notificationAdapter, calendarAdapter, runLedger: store.automationRuns });
   const save = async () => persist(store);
+  const integration = createIntegrationHub(store);
   const router = async (req, res, tools) => {
     const url = new URL(req.url, 'http://localhost');
     if (req.method === 'GET' && url.pathname === '/health') return json(res, 200, { status: 'ok', service: 'stargrid', version: '3.0.0-alpha.1', request_id: req.context.requestId });
@@ -43,6 +46,7 @@ export function createApp({ store = createMemoryStore(), config, persist = async
       return task ? json(res, 200, task) : json(res, 404, { error: 'TASK_NOT_FOUND' });
     }
     const body = await tools.readBody(req);
+    if (req.method === 'POST' && url.pathname === '/events/publish') { const event = createCoordinationEvent({ workspaceId: body.workspace_id, type: body.type, aggregateType: body.aggregate_type, aggregateId: body.aggregate_id, payload: body.payload ?? {}, actorId: req.context.actorId, correlationId: body.correlation_id }); const result = await integration.publish(event, req.context); await save(); return json(res, result.accepted ? 201 : 200, result); }
     if (req.method === 'POST' && url.pathname === '/tasks') {
       validateTaskInput(body);
       const task = createTask(body);
