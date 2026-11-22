@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stargrid/study-plan.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "workspace_id",
+    "learner_id",
+    "planner_version",
+    "items",
+    "status",
+    "created_at",
+    "version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "learner_id": {
+      "type": "string"
+    },
+    "planner_version": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "scheduled_start",
+          "scheduled_end",
+          "source_ref"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "review",
+              "assignment",
+              "exam_prep",
+              "practice"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "scheduled_start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scheduled_end": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source_ref": {
+            "type": "string"
+          },
+          "locked": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "active",
+        "superseded"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}
