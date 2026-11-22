@@ -1,5 +1,6 @@
 import { createMemoryStore } from '../packages/shared/src/memory-store.mjs';
 import { createTask, transitionTask } from '../engines/task/src/task-service.mjs';
+import { validateTaskInput } from '../engines/task/src/validator.mjs';
 import { createKnowledgeDraft, publishKnowledgeNote } from '../engines/knowledge/src/publisher.mjs';
 import { createExamNotification, buildStudyPlan } from '../engines/exam-planner/src/planner.mjs';
 import { validateAutomation } from '../engines/automation/src/registry.mjs';
@@ -9,14 +10,30 @@ import { createHttpServer, json } from './http.mjs';
 import { authorize } from './auth.mjs';
 import { createRateLimiter } from './rate-limit.mjs';
 
-export function createApp({ store = createMemoryStore(), config } = {}) {
+export function createApp({ store = createMemoryStore(), config, persist = async () => {} } = {}) {
   const router = async (req, res, tools) => {
     const url = new URL(req.url, 'http://localhost');
     if (req.method === 'GET' && url.pathname === '/health') return json(res, 200, { status: 'ok', service: 'stargrid', version: '3.0.0-alpha.1', request_id: req.context.requestId });
     if (req.method === 'GET' && url.pathname === '/events') return json(res, 200, store.events);
     const body = await tools.readBody(req);
-    if (req.method === 'POST' && url.pathname === '/tasks') { const task = createTask(body); store.tasks.push(task); return json(res, 201, task); }
-    if (req.method === 'POST' && url.pathname.match(/^\/tasks\/[^/]+\/transition$/)) { const id=url.pathname.split('/')[2]; const task=store.tasks.find(item=>item.id===id); if(!task)return json(res,404,{error:'TASK_NOT_FOUND'}); const updated=transitionTask(task,body.status,body.actor_id ?? req.context.actorId,store.events); Object.assign(task,updated); return json(res,200,task); }
+    if (req.method === 'POST' && url.pathname === '/tasks') {
+      validateTaskInput(body);
+      const task = createTask(body);
+      await persist({ ...store, tasks: [...store.tasks, task] });
+      store.tasks.push(task);
+      return json(res, 201, task);
+    }
+    if (req.method === 'POST' && url.pathname.match(/^\/tasks\/[^/]+\/transition$/)) {
+      const id=url.pathname.split('/')[2]; const task=store.tasks.find(item=>item.id===id);
+      if(!task)return json(res,404,{error:'TASK_NOT_FOUND'});
+      const nextEvents = [...store.events];
+      const updated=transitionTask(task,body.status,body.actor_id ?? req.context.actorId,nextEvents);
+      const nextTasks = store.tasks.map(item => item.id === id ? updated : item);
+      await persist({ ...store, tasks: nextTasks, events: nextEvents });
+      Object.assign(task,updated);
+      store.events.splice(0, store.events.length, ...nextEvents);
+      return json(res,200,task);
+    }
     if (req.method === 'POST' && url.pathname === '/knowledge/drafts') { const note=createKnowledgeDraft(body); store.knowledge.push(note); return json(res,201,note); }
     if (req.method === 'POST' && url.pathname.match(/^\/knowledge\/[^/]+\/publish$/)) { const id=url.pathname.split('/')[2]; const note=store.knowledge.find(item=>item.id===id); if(!note)return json(res,404,{error:'KNOWLEDGE_NOT_FOUND'}); const published=publishKnowledgeNote(note,body.actor_id ?? req.context.actorId); Object.assign(note,published); return json(res,200,note); }
     if (req.method === 'POST' && url.pathname === '/exams') { const exam=createExamNotification(body); store.exams.push(exam); return json(res,201,exam); }
