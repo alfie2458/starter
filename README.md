@@ -33,6 +33,7 @@ STARGRID 不把「AI」當成沒有邊界的自動化黑盒。成員提交教材
 - GitHub Actions 的最小 `GITHUB_TOKEN` 權限基線
 - Pull Request、Issue、貢獻與安全政策
 - Phase 1 架構決策與完成定義
+- Phase 2–7 全平台引擎、契約、資料範本與文件骨架
 
 ## 本地檢查
 
@@ -51,6 +52,10 @@ npm test
 STARGRID 的外部教材、提示詞、AI 輸出、Webhook payload 與 GitHub 內容都必須視為不可信輸入。它們不能自行授予 Agent shell、GitHub 寫入權或 credential 存取權。API key、OAuth secret、JWT key、資料庫密碼與 webhook secret 只能放在受保護的 Secrets/Environment 中，絕不提交到 Git、Issue、PR 或 CI log。
 
 詳細規則請看 [SECURITY.md](SECURITY.md)。
+
+## 全平台搭建狀態
+
+完整狀態請看 [全階段路線](docs/roadmap.md)。目前各引擎先以清楚的契約與安全邊界搭建，尚未宣稱所有服務已正式可用。
 
 ## 路線圖
 

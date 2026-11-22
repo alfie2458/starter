@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stargrid/gamification-event.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "workspace_id",
+    "member_id",
+    "event_type",
+    "rule_version",
+    "points",
+    "occurred_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "member_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "rule_version": {
+      "type": "string"
+    },
+    "points": {
+      "type": "integer"
+    },
+    "currency": {
+      "enum": [
+        "xp",
+        "coin",
+        "none"
+      ]
+    },
+    "evidence_ref": {
+      "type": "string"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

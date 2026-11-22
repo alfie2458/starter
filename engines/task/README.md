@@ -1,3 +1,3 @@
-# task Engine
+# Task Engine
 
-Phase 1 boundary; implementation follows the shared contracts and acceptance criteria.
+統一管理作業、複習、知識補強與團隊任務。支援明確狀態機、截止日期保護、冪等更新與審計事件。

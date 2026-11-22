@@ -1,0 +1,8 @@
+schema_version: "1.0"
+invitation_only: true
+roles:
+  - member
+  - maintainer
+  - security_reviewer
+  - admin
+secret_policy: "secrets-never-enter-repository"

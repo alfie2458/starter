@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stargrid/member.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "workspace_id",
+    "github_user_id",
+    "status",
+    "role",
+    "invited_at",
+    "version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "github_user_id": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "invited",
+        "active",
+        "suspended",
+        "left",
+        "removed"
+      ]
+    },
+    "role": {
+      "enum": [
+        "member",
+        "maintainer",
+        "security_reviewer",
+        "admin"
+      ]
+    },
+    "invited_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "joined_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}
